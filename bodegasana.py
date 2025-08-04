@@ -15,11 +15,13 @@ df = df.dropna(subset=['Responsable', 'Monto'])
 
 # --- Análisis 1: Total por arrendatario ---
 arriendos_totales = df.groupby('Responsable')['Monto'].sum().sort_values(ascending=False)
+print("\n>>> Total por arrendatario:")
 print(arriendos_totales)
 
 # --- Análisis 2: Evolución mensual ---
 df['Mes-Año'] = df['Fecha'].dt.to_period('M')
 evolucion = df.groupby(['Mes-Año', 'Responsable'])['Monto'].sum().unstack().fillna(0)
+print("\n>>> Evolución mensual (últimas filas):")
 print(evolucion.tail())
 
 # --- Análisis 3: Participación por arrendatario (torta) ---
@@ -40,15 +42,10 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
 
-# --- Análisis 5: Línea (evolución mensual) ---
-plt.figure(figsize=(12,6))
-evolucion.sum(axis=1).plot()
-plt.title('Evolución mensual de arriendos')
-plt.xlabel('Mes-Año')
-plt.ylabel('Monto total')
-plt.tight_layout()
-plt.show()
 
-# --- Análisis 6: Rosa de viento (Frecuencia de pagos por bodega/espacio) ---
-if 'Esp' in df.columns:
-    # Convertir Esp a string
+
+
+
+
+
+
