@@ -1037,6 +1037,7 @@ else:
 
    # --- Tabla (DISPLAY con $ y puntos de miles) + descarga Excel (NUMÉRICO) ---
 
+
 st.markdown("#### 📄 Dataset agregado (Canon/m² — Año x Esp)")
 
 df_x = plot_df.reset_index().rename(columns={"index": "Año"}).copy()
@@ -1107,7 +1108,3 @@ st.download_button(
     file_name=f"canon_m2_{titulo_esc}_{moneda_m2}_por_anio_y_esp.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 )
-
-
-
-
