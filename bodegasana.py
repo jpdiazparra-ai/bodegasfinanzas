@@ -6,8 +6,52 @@ import plotly.express as px
 # Configuración base
 # =========================
 st.set_page_config(page_title="Análisis Financiero - OK-DTA V2", layout="wide")
-st.title("🔎 Análisis de Financiero Bodegas")
+import base64
+from pathlib import Path
+
+# --- Logo -> data URI (evita problemas de ruta) ---
+def data_uri(path: str) -> str:
+    p = Path(path)
+    if not p.exists():
+        return ""  # si no está, ocultamos el <img>
+    b64 = base64.b64encode(p.read_bytes()).decode()
+    ext = p.suffix.lower().replace(".", "") or "png"
+    return f"data:image/{ext};base64,{b64}"
+
+LOGO_URI = data_uri("Logo_balmaceda.png")  # el archivo está en la misma carpeta del .py
+
+# Tamaño del logo (desktop)
+LOGO_SIZE = 210  # px  (antes ~42)
+
+st.markdown(f"""
+<style>
+.header-title{{display:flex;align-items:center;gap:16px}}
+.header-title h1{{margin:0;padding:0}}
+/* Logo 5× en desktop, con límites para que no rompa el layout */
+.header-title img{{
+  width:{LOGO_SIZE}px; 
+  height:{LOGO_SIZE}px; 
+  object-fit:contain; 
+  border-radius:12px;
+  max-width:25vw;               /* evita que ocupe demasiado ancho */
+}}
+/* Responsive: reduce en pantallas medianas y móviles */
+@media (max-width: 1200px) {{
+  .header-title img{{ width:140px; height:140px; }}
+}}
+@media (max-width: 640px) {{
+  .header-title img{{ width:72px; height:72px; }}
+}}
+</style>
+<div class="header-title">
+  <h1>🔎 Análisis Financiero de Bodegas</h1>
+  {'<img src="'+LOGO_URI+'" alt="Logo">' if LOGO_URI else ''}
+</div>
+""", unsafe_allow_html=True)
+
+
 st.caption("Fuente: Google Sheets (CSV) · Agrupaciones dinámicas y visualizaciones interactivas")
+
 
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuoX_V5rYls-pBu7F3_VP2APS3FL7-eYbn9uDWUGJQZbxNfQTm9gRlyDlE69wWJjsDQpDzi2lt31Ak/pub?gid=1154929321&single=true&output=csv"
 
@@ -196,6 +240,68 @@ with c3:
         <div class="kpi3-card" style="--accent:{bal_color}">
             <div class="kpi3-title">BALANCE NETO</div>
             <div class="kpi3-value" style="color:{bal_color};">${balance_kpi:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+# === FILA: Cuentas por Cobrar (neto) + Egresos por Pagar ===
+sit_norm = df_f["Sit"].astype(str).str.strip().str.upper()
+cc_up    = df_f["CC"].astype(str).str.upper()
+
+# Cuentas por cobrar (neto) = NO PAGADO – ABONO  [solo INGRESO]
+mask_ingreso     = cc_up.eq("INGRESO")
+no_pagado_total  = df_f.loc[mask_ingreso & sit_norm.eq("NO PAGADO"), "Monto"].sum()
+abonos_total     = df_f.loc[mask_ingreso & sit_norm.str.startswith("ABONO"), "Monto"].sum()
+if abonos_total == 0:
+    abonos_total = df_f.loc[
+        mask_ingreso & df_f["Obs"].astype(str).str.contains(r"\babono\b", case=False, na=False),
+        "Monto"
+    ].sum()
+cuentas_por_cobrar_neto = no_pagado_total - abonos_total
+
+# Egresos por pagar [EGRESO y NO PAGADO]
+total_egresos_por_pagar = df_f.loc[
+    cc_up.eq("EGRESO") & sit_norm.eq("NO PAGADO"), "Monto"
+].sum()
+
+# (Opcional) Posición neta de corto plazo: CxC neto – Egresos por pagar
+posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar
+
+# -------- Layout en una sola fila --------
+c1, c2, c3 = st.columns([1,1,1])  # usa c3 si quieres mostrar la posición neta
+
+cxc_color = "#F59E0B" if cuentas_por_cobrar_neto > 0 else "#10B981"
+with c1:
+    st.markdown(
+        f"""
+        <div class="kpi3-card" style="--accent:{cxc_color}">
+            <div class="kpi3-title">CUENTAS POR COBRAR (NETO)</div>
+            <div class="kpi3-value" style="color:{cxc_color};">${cuentas_por_cobrar_neto:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+epp_color = "#EF4444" if total_egresos_por_pagar != 0 else "#10B981"
+with c2:
+    st.markdown(
+        f"""
+        <div class="kpi3-card" style="--accent:{epp_color}">
+            <div class="kpi3-title">EGRESOS POR PAGAR</div>
+            <div class="kpi3-value" style="color:{epp_color};">${total_egresos_por_pagar:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Si NO quieres mostrar "Posición Neta", borra este bloque 'with c3'
+pn_color = "#10B981" if posicion_neta >= 0 else "#EF4444"
+with c3:
+    st.markdown(
+        f"""
+        <div class="kpi3-card" style="--accent:{pn_color}">
+            <div class="kpi3-title">POSICIÓN NETA (CxC + EPP)</div>
+            <div class="kpi3-value" style="color:{pn_color};">${posicion_neta:,.0f}</div>
         </div>
         """,
         unsafe_allow_html=True
