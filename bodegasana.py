@@ -386,12 +386,14 @@ fig.add_trace(go.Scatter(
     mode="lines+markers+text",
     text=labels_line,
     textposition="top center",
+    textfont=dict(color="darkblue", size=12),   # 👈 color azul oscuro y tamaño legible
     line=dict(width=3, dash="solid"),
     marker=dict(size=7),
     hovertemplate=(
         "<b>Año %{x}</b><br>MA-3: $%{y:,.0f}<extra></extra>"
     )
 ))
+
 
 # Anotación del último valor (callout)
 if not canon_year.empty:
@@ -1105,6 +1107,7 @@ st.download_button(
     file_name=f"canon_m2_{titulo_esc}_{moneda_m2}_por_anio_y_esp.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 )
+
 
 
 
