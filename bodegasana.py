@@ -238,7 +238,7 @@ with c3:
     st.markdown(
         f"""
         <div class="kpi3-card" style="--accent:{bal_color}">
-            <div class="kpi3-title">BALANCE NETO</div>
+            <div class="kpi3-title">CAJA BANCO BCI</div>
             <div class="kpi3-value" style="color:{bal_color};">${balance_kpi:,.0f}</div>
         </div>
         """,
@@ -276,7 +276,7 @@ with c1:
     st.markdown(
         f"""
         <div class="kpi3-card" style="--accent:{cxc_color}">
-            <div class="kpi3-title">CUENTAS POR COBRAR (NETO)</div>
+            <div class="kpi3-title">CUENTAS POR COBRAR </div>
             <div class="kpi3-value" style="color:{cxc_color};">${cuentas_por_cobrar_neto:,.0f}</div>
         </div>
         """,
