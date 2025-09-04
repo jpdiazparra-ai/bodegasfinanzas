@@ -264,8 +264,9 @@ total_egresos_por_pagar = df_f.loc[
     cc_up.eq("EGRESO") & sit_norm.eq("NO PAGADO"), "Monto"
 ].sum()
 
-# (Opcional) Posición neta de corto plazo: CxC neto – Egresos por pagar
-posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar
+# Nueva: Posición neta integral = CxC neto + EPP + Balance Neto
+posicion_neta = cuentas_por_cobrar_neto + total_egresos_por_pagar + balance_kpi
+
 
 # -------- Layout en una sola fila --------
 c1, c2, c3 = st.columns([1,1,1])  # usa c3 si quieres mostrar la posición neta
@@ -300,7 +301,7 @@ with c3:
     st.markdown(
         f"""
         <div class="kpi3-card" style="--accent:{pn_color}">
-            <div class="kpi3-title">POSICIÓN NETA (CxC + EPP)</div>
+            <div class="kpi3-title">POSICIÓN NETA (CxC + EPP + BN)</div>
             <div class="kpi3-value" style="color:{pn_color};">${posicion_neta:,.0f}</div>
         </div>
         """,
